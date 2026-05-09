@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free WiFi — Sarviola</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0d0d0d;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 28px 16px 32px;
+            color: #f0f0f0;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: -200px; left: 50%;
+            transform: translateX(-50%);
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(245,197,24,0.07) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .wrapper { position: relative; z-index: 1; width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center; }
+        .badge {
+            display: inline-flex; align-items: center; gap: 7px;
+            background: rgba(245,197,24,0.12); border: 1px solid rgba(245,197,24,0.22);
+            border-radius: 999px; padding: 6px 16px;
+            font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+            color: #F5C518; margin-bottom: 20px;
+            animation: fadeDown 0.6s ease both;
+        }
+        .badge-dot { width: 7px; height: 7px; background: #F5C518; border-radius: 50%; animation: pulse 1.6s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.65)} }
+        .card {
+            background: #131313;
+            border: 1px solid rgba(245,197,24,0.14);
+            border-radius: 22px; overflow: hidden; width: 100%;
+            box-shadow: 0 0 60px rgba(245,197,24,0.09), 0 20px 50px rgba(0,0,0,0.5);
+            animation: fadeUp 0.7s ease both 0.1s;
+        }
+        .card-header {
+            background: #110f00;
+            border-bottom: 1px solid rgba(245,197,24,0.12);
+            padding: 28px 28px 24px;
+            position: relative; overflow: hidden;
+        }
+        .card-header::after {
+            content: '';
+            position: absolute; top: -60px; right: -60px;
+            width: 180px; height: 180px;
+            background: radial-gradient(circle, rgba(245,197,24,0.1), transparent 70%);
+            pointer-events: none;
+        }
+        .wifi-icon {
+            width: 50px; height: 50px;
+            background: linear-gradient(135deg, #F5C518, #e6a800);
+            border-radius: 13px; display: flex; align-items: center; justify-content: center;
+            margin-bottom: 18px;
+            box-shadow: 0 4px 18px rgba(245,197,24,0.28);
+        }
+        .wifi-icon svg { width: 26px; height: 26px; }
+        h1 { font-size: 22px; font-weight: 800; color: #fff; line-height: 1.25; margin-bottom: 6px; }
+        h1 span { color: #F5C518; }
+        .card-header p { color: #666; font-size: 13px; }
+        .card-body { padding: 22px 24px 28px; display: flex; flex-direction: column; gap: 13px; }
+        .info-row {
+            background: #1a1a1a; border: 1px solid rgba(245,197,24,0.1);
+            border-radius: 13px; padding: 14px 16px;
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            transition: border-color 0.2s;
+        }
+        .info-row:hover { border-color: rgba(245,197,24,0.3); }
+        .info-left { flex: 1; min-width: 0; }
+        .info-label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #555; margin-bottom: 4px; }
+        .info-value { font-size: 15px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pass-wrap { display: flex; align-items: center; gap: 7px; }
+        .pass-text { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: 0.03em; }
+        .pass-text.hidden { letter-spacing: 0.14em; color: #444; }
+        .eye-btn { background: none; border: none; color: #555; cursor: pointer; padding: 2px; display: flex; transition: color 0.2s; }
+        .eye-btn:hover { color: #F5C518; }
+        .copy-btn {
+            flex-shrink: 0; background: #242424; border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px; padding: 6px 12px; color: #666; font-size: 12px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 5px;
+            font-family: 'Inter', sans-serif;
+        }
+        .copy-btn:hover { background: rgba(245,197,24,0.1); border-color: #F5C518; color: #F5C518; }
+        .copy-btn.ok { background: rgba(52,199,89,0.1); border-color: #34C759; color: #34C759; }
+        .connect-btn {
+            display: flex; align-items: center; justify-content: center; gap: 9px;
+            width: 100%; padding: 15px;
+            background: linear-gradient(135deg, #F5C518, #e6a800);
+            border: none; border-radius: 13px; color: #000;
+            font-size: 15px; font-weight: 800; cursor: pointer; font-family: 'Inter', sans-serif;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 20px rgba(245,197,24,0.28);
+        }
+        .connect-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(245,197,24,0.4); }
+        .connect-btn:active { transform: translateY(0); }
+        .divider { display: flex; align-items: center; gap: 10px; color: #444; font-size: 12px; }
+        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(245,197,24,0.1); }
+        .qr-section { background: #1a1a1a; border: 1px solid rgba(245,197,24,0.1); border-radius: 13px; padding: 22px; text-align: center; }
+        .qr-label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #F5C518; margin-bottom: 4px; }
+        .qr-sub { font-size: 12px; color: #555; margin-bottom: 18px; }
+        .qr-wrap { display: inline-block; background: #fff; border-radius: 10px; padding: 10px; box-shadow: 0 0 24px rgba(245,197,24,0.15); }
+        #qrcode canvas, #qrcode img { border-radius: 4px; display: block; }
+        footer { margin-top: 22px; text-align: center; color: #444; font-size: 12px; animation: fadeUp 0.7s ease both 0.3s; }
+        footer a { color: #F5C518; text-decoration: none; font-weight: 600; }
+        footer a:hover { text-decoration: underline; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .toast {
+            position: fixed; bottom: 26px; left: 50%;
+            transform: translateX(-50%) translateY(14px);
+            background: #1e1e1e; border: 1px solid rgba(245,197,24,0.2);
+            border-radius: 10px; padding: 11px 18px;
+            font-size: 13px; font-weight: 500; color: #F5C518;
+            opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 999; white-space: nowrap;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        @media (max-width: 420px) { .card-header, .card-body { padding-left: 18px; padding-right: 18px; } h1 { font-size: 19px; } }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="badge"><span class="badge-dot"></span>Jaringan Aktif</div>
+    <div class="card">
+        <div class="card-header">
+            <div class="wifi-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1.5 8.4a14 14 0 0 1 21 0"/>
+                    <path d="M5.3 12.2a9 9 0 0 1 13.4 0"/>
+                    <path d="M9.1 16a5 5 0 0 1 5.8 0"/>
+                    <circle cx="12" cy="20" r="1" fill="#000" stroke="none"/>
+                </svg>
+            </div>
+            <h1>Selamat Datang di<br><span>Hospot Piw</span></h1>
+            <p>Nikmati akses internet gratis — powered by sarviola.my.id</p>
+        </div>
+        <div class="card-body">
+            <div class="info-row">
+                <div class="info-left">
+                    <div class="info-label">Nama Jaringan (SSID)</div>
+                    <div class="info-value" id="ssid-val">piw.sarviola.my.id</div>
+                </div>
+                <button class="copy-btn" id="ssid-btn" onclick="doCopy('ssid')">Salin</button>
+            </div>
+            <div class="info-row">
+                <div class="info-left">
+                    <div class="info-label">Password</div>
+                    <div class="pass-wrap">
+                        <span class="pass-text hidden" id="pass-disp">••••••••••••</span>
+                        <button class="eye-btn" onclick="togglePass()" title="Tampilkan password">
+                            <svg id="eye-ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <button class="copy-btn" id="pass-btn" onclick="doCopy('pass')">Salin</button>
+            </div>
+            <button class="connect-btn" onclick="connectWifi()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <path d="M1.5 8.4a14 14 0 0 1 21 0"/>
+                    <path d="M5.3 12.2a9 9 0 0 1 13.4 0"/>
+                    <path d="M9.1 16a5 5 0 0 1 5.8 0"/>
+                    <circle cx="12" cy="20" r="1" fill="currentColor" stroke="none"/>
+                </svg>
+                Hubungkan Sekarang
+            </button>
+            <div class="divider">atau scan QR Code</div>
+            <div class="qr-section">
+                <div class="qr-label">Auto-Connect via QR</div>
+                <div class="qr-sub">Arahkan kamera HP — langsung terhubung otomatis</div>
+                <div class="qr-wrap"><div id="qrcode"></div></div>
+            </div>
+        </div>
+    </div>
+    <footer>Butuh bantuan? Kunjungi <a href="https://chat.sarviola.my.id" target="_blank">chat.sarviola.my.id</a></footer>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+    var SSID = "piw.sarviola.my.id";
+    var PASS = "freehosbysaya";
+    var pv = false;
+
+    new QRCode(document.getElementById("qrcode"), {
+        text: "WIFI:T:WPA;S:" + SSID + ";P:" + PASS + ";;",
+        width: 180, height: 180,
+        colorDark: "#000000", colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
+    });
+
+    function togglePass() {
+        pv = !pv;
+        var el = document.getElementById('pass-disp');
+        var ic = document.getElementById('eye-ic');
+        if (pv) {
+            el.textContent = PASS;
+            el.classList.remove('hidden');
+            ic.innerHTML = '<path d="M17.94 17.94A10 10 0 0 1 12 20c-7 0-11-8-11-8a18 18 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9 9 0 0 1 12 4c7 0 11 8 11 8a18 18 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
+        } else {
+            el.textContent = '••••••••••••';
+            el.classList.add('hidden');
+            ic.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+        }
+    }
+
+    function doCopy(t) {
+        var txt = t === 'ssid' ? SSID : PASS;
+        var btn = document.getElementById(t + '-btn');
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(txt).then(function () {
+                btn.textContent = 'Disalin!';
+                btn.classList.add('ok');
+                showToast((t === 'ssid' ? 'SSID' : 'Password') + ' disalin ke clipboard!');
+                setTimeout(function () { btn.textContent = 'Salin'; btn.classList.remove('ok'); }, 2000);
+            });
+        } else {
+            showToast('Clipboard tidak tersedia di browser ini');
+        }
+    }
+
+    function connectWifi() {
+        var ua = navigator.userAgent.toLowerCase();
+        if (/android/.test(ua)) {
+            window.location.href = 'intent://wifi/#Intent;scheme=android-wifi;S.SSID=' + encodeURIComponent(SSID) + ';S.PASSWORD=' + encodeURIComponent(PASS) + ';S.SECURITY=WPA;end';
+            setTimeout(function () { window.location.href = 'intent:#Intent;action=android.settings.WIFI_SETTINGS;end'; }, 800);
+            showToast('Membuka pengaturan WiFi...');
+        } else if (/iphone|ipad|ipod/.test(ua)) {
+            showToast('Scan QR Code dengan kamera untuk iOS!');
+        } else {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(PASS).then(function () { showToast('Password disalin — buka WiFi Settings!'); });
+            }
+        }
+    }
+
+    function showToast(msg) {
+        var t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(function () { t.classList.remove('show'); }, 2800);
+    }
+</script>
+</body>
+</html>
