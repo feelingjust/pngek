@@ -58,6 +58,8 @@ h1 span{color:#F5C518}
 .stv{font-size:22px;font-weight:800;color:#F5C518;line-height:1}
 .stv.green{color:#34C759}
 .sts{font-size:10px;color:#444;margin-top:3px}
+.helpBtn{margin-left:8px;background:none;border:none;color:#F5C518;font-size:11.5px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:.2s;}
+.helpBtn:hover{opacity:.8;transform:scale(.97);}
 .logsec{background:#1a1a1a;border:1px solid rgba(245,197,24,.1);border-radius:12px;overflow:hidden}
 .loghdr{padding:11px 14px 9px;border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;justify-content:space-between}
 .logtitle{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#F5C518}
@@ -182,8 +184,16 @@ footer a{color:#F5C518;text-decoration:none;font-weight:600}
   </div>
 </div>
 
-<footer>Butuh bantuan? <a href="https://chat.sarviola.my.id" target="_blank">chat.sarviola.my.id</a></footer>
+<footer>Butuh bantuan?<button class="helpBtn"onclick="hubungiAdmin()">Hubungi kami</button></footer>
 <div class="toast" id="toast"></div>
+
+<script>
+function hubungiAdmin() {
+  const heroName = document.querySelector('.det-hero-name');
+  const autoMsg = encodeURIComponent(`Halo Admin! Saya butuh bantuan.`);
+  window.location.href = `https://sarviola.my.id/lachat.html?admin=1&msg=${autoMsg}`;
+}
+</script>
 
 <script>
 var SSID = "piw.sarviola.my.id";
