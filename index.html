@@ -317,17 +317,61 @@ function doCopy(t) {
   }
 }
 
-function connectWifi() {
-  var ua = navigator.userAgent.toLowerCase();
-  if (/android/.test(ua)) {
-    window.location.href = 'intent://wifi/#Intent;scheme=android-wifi;S.SSID=' + encodeURIComponent(SSID) + ';S.PASSWORD=' + encodeURIComponent(PASS) + ';S.SECURITY=WPA;end';
-    setTimeout(function () { window.location.href = 'intent:#Intent;action=android.settings.WIFI_SETTINGS;end'; }, 800);
-    showToast('Membuka pengaturan WiFi...');
-  } else if (/iphone|ipad|ipod/.test(ua)) {
-    showToast('Scan QR Code dengan kamera untuk iOS!');
-  } else {
-    if (navigator.clipboard) navigator.clipboard.writeText(PASS).then(function () { showToast('Password disalin — buka WiFi Settings!'); });
+function connectWifi(){
+  showToast("Mencoba menghubungkan...");
+  let ua = navigator.userAgent.toLowerCase();
+
+  // ANDROID
+  if(/android/.test(ua)){
+    let wifiIntent =
+      "intent://wifi/#Intent;" +
+      "scheme=android-wifi;" +
+      "S.SSID=" + encodeURIComponent(SSID) + ";" +
+      "S.PASSWORD=" + encodeURIComponent(PASS) + ";" +
+      "S.SECURITY=WPA;" +
+      "end";
+      
+    window.location.href = wifiIntent;
+
+    // fallback buka setting wifi
+    setTimeout(function(){
+      window.location.href =
+      "intent:#Intent;action=android.settings.WIFI_SETTINGS;end";
+
+    },1000);
   }
+
+  // IOS
+  else if(/iphone|ipad|ipod/.test(ua)){
+    showToast("Scan QR untuk iPhone");
+    document
+      .getElementById("qrcode")
+      .scrollIntoView({
+        behavior:"smooth"
+      });
+  }
+
+  // DESKTOP
+  else{
+    if(navigator.clipboard){
+      navigator.clipboard
+      .writeText(PASS);
+    }
+    showToast(
+      "Password disalin, buka WiFi"
+    );
+  }
+
+
+  // log koneksi
+  logs.unshift({
+    id:Date.now(),
+    nama:"Perangkat Saya",
+    jam:fmt(new Date()),
+    dur:0,
+    status:"aktif"
+  });
+  renderAll();
 }
 
 function showToast(msg) {
